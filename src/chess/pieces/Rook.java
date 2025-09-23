@@ -14,4 +14,10 @@ public class Rook extends ChessPiece { // PEÇA: TORRE
 	public String toString() {
 		return "R"; // CONVERTENDO A TORRE PARA UMA STRING 'R' (APENAS UMA LETRA, POIS ELA VAI ENTRAR A LETRA NO TABULEIRO)
 	}
+	
+	@Override
+	public boolean[][] possibleMoves() {
+		boolean[][] mat = new boolean[getBoard().getRows()][getBoard().getColumns()];
+		return mat;
+	}
 }

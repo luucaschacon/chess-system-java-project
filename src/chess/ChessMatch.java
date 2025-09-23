@@ -51,6 +51,10 @@ public class ChessMatch {
 			throw new ChessException("There is no piece on source position");
 			// SE NÃO EXISTIR UMA PEÇA NA POSIÇÃO ELE TRAZ A EXCEÇÃO
 		}
+		if (!board.piece(position).isThereAnyPossibleMove()) {
+			throw new ChessException("Ther is no possible moves for the chosen piece");
+			// TESTANDO SE NÃO TIVER NENHUM MOVIMENTO POSSÍVEL EU TENHO QUE LANÇAR UMA EXCEÇÃO
+		}
 	}
 	
 	// MÉTODO PARA RECEBER AS COORDENADAS DO XADREZ:
