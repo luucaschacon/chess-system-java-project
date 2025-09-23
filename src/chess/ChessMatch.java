@@ -1,6 +1,8 @@
 package chess;
 
 import boardgame.Board;
+import boardgame.Piece;
+import boardgame.Position;
 import chess.pieces.King;
 import chess.pieces.Rook;
 
@@ -21,6 +23,34 @@ public class ChessMatch {
 			}
 		}
 		return mat; // RETORNANDO A MINHA MATRIZ MAT (RETORNA A MATRIZ DE PEÇAS DA PARTIDA DE XADREZ)
+	}
+	
+	// OPERAÇÃO PARA MOVER A PEÇA:
+	
+	public ChessPiece performChessMove(ChessPosition sourcePosition, ChessPosition targetPosition) { // RECEBENDO A POSIÇÃO DE ORIGEM E DESTINO
+		Position source = sourcePosition.toPosition(); // CONVERTENDO AS POSIÇÕES PARA POSIÇÕES DA MATRIZ 
+		Position target = targetPosition.toPosition();
+		validateSourcePosition(source); // VALIDANDO SE NA POSIÇÃO DE ORIGEM HAVIA UMA PEÇA
+		Piece capturedPiece = makeMove(source, target); // DECLARANDO VARIAVEL PARA RECEBER O RESULTADO DA OPERAÇÃO 'MAKEMOVE' QUE REALIZA O MOVIMENTO DA PEÇA
+		return (ChessPiece)capturedPiece;
+	}
+	
+	// OPERAÇÃO PARA REALIZAR O MOVIMENTO DA PEÇA:
+	
+	private Piece makeMove(Position source, Position target) { // RECEBENDO A POSIÇÃO DE ORIGEM E DESTINO
+		Piece p = board.removePiece(source); // VARIAVEL 'P' RECEBENDO A PEÇA QUE ESTAVA NA POSIÇÃO DE ORIGEM
+		Piece capturedPiece = board.removePiece(target); // REMOVENDO A POSSÍVEL PEÇA QUE ESTEJA NA POSIÇÃO DE DESTINO QUE SERÁ A PEÇA CAPTURADA 
+		board.placePiece(p, target); // COLOCANDO A POSIÇÃO DE ORIGEM NA POSIÇÃO DE DESTINO
+		return capturedPiece;
+	}
+	
+	// VALIDAÇÃO DA POSIÇÃO DE ORIGEM:
+	
+	private void validateSourcePosition(Position position) {
+		if (!board.thereIsAPiece(position)) {
+			throw new ChessException("There is no piece on source position");
+			// SE NÃO EXISTIR UMA PEÇA NA POSIÇÃO ELE TRAZ A EXCEÇÃO
+		}
 	}
 	
 	// MÉTODO PARA RECEBER AS COORDENADAS DO XADREZ:
