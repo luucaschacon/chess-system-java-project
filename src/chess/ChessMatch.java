@@ -8,11 +8,23 @@ import chess.pieces.Rook;
 
 public class ChessMatch {
 	
+	private int turn;
+	private Color currentPlayer;
 	private Board board;
 	
 	public ChessMatch() {
 		board = new Board(8, 8); // CLASSE CHESSMATCH QUE SABE A DIMENSÃO DO TABULEIRO DE XADREZ 
+		turn = 1;
+		currentPlayer = Color.WHITE;
 		initialSetup(); // CHAMANDO O MÉTODO 'INITIAL SETUP' AQUI NO CONSTRUTOR DA PARTIDA
+	}
+	
+	public int getTurn() {
+		return turn;
+	}
+	
+	public Color getCurrentPlayer() {
+		return currentPlayer;
 	}
 	
 	public ChessPiece[][] getPieces() { // MÉTODO PARA RETORNAR UMA MATRIZ DE PEÇAS DE XADREZ CORRESPONDENTES A PARTIDA
@@ -39,6 +51,7 @@ public class ChessMatch {
 		validateSourcePosition(source); // VALIDANDO SE NA POSIÇÃO DE ORIGEM HAVIA UMA PEÇA
 		validateTargetPosition(source, target); // VALIDANDO A POSIÇÃO DE DESTINO
 		Piece capturedPiece = makeMove(source, target); // DECLARANDO VARIAVEL PARA RECEBER O RESULTADO DA OPERAÇÃO 'MAKEMOVE' QUE REALIZA O MOVIMENTO DA PEÇA
+		nextTurn(); // TROCANDO O TURNO
 		return (ChessPiece)capturedPiece;
 	}
 	
@@ -58,6 +71,10 @@ public class ChessMatch {
 			throw new ChessException("There is no piece on source position");
 			// SE NÃO EXISTIR UMA PEÇA NA POSIÇÃO ELE TRAZ A EXCEÇÃO
 		}
+		if (currentPlayer != ((ChessPiece)board.piece(position)).getColor()) {
+			throw new ChessException("The chosen piece is not yours");
+			// SE A COR DA PEÇA FOR DIFERENTE DO JOGADOR ATUAL SIGNIFICA QUE É UMA PEÇA DO ADVERSÁRIO E Ñ PODE SER MOVIDA  
+		}
 		if (!board.piece(position).isThereAnyPossibleMove()) {
 			throw new ChessException("Ther is no possible moves for the chosen piece");
 			// TESTANDO SE NÃO TIVER NENHUM MOVIMENTO POSSÍVEL EU TENHO QUE LANÇAR UMA EXCEÇÃO
@@ -69,6 +86,12 @@ public class ChessMatch {
 			throw new ChessException("The chosen piece can't move to target position");
 			// SE PARA A PEÇA DE ORIGEM A POSIÇÃO DE DESTINO N É UM MOVIMENTO POSSÍVEL (SIGNIFICA QUE N POSSO MOVIMENTAR PARA LÁ)
 		}
+	}
+	
+	private void nextTurn() { // TROCA DE TURNO
+		turn++;
+		currentPlayer = (currentPlayer == Color.WHITE) ? Color.BLACK : Color.WHITE;
+		// SE O JOGADOR ATUAL FOR IGUAL A BRANCO ENTÃO AGORA ELE VAI SER O PRETO, CASO CONTRARIO VAI SER O BRANCO
 	}
 	
 	// MÉTODO PARA RECEBER AS COORDENADAS DO XADREZ:
