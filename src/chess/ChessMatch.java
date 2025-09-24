@@ -16,6 +16,7 @@ public class ChessMatch {
 	private Color currentPlayer;
 	private Board board;
 	private boolean check; // OBS.: PROPRIEDADES BOOLEAN COMEÇAM COM 'FALSE'
+	private boolean checkMate;
 	
 	private List<Piece> piecesOnTheBoard = new ArrayList<>(); // CRIANDO A LISTA DE PEÇAS NO TABULEIRO
 	private List<Piece> capturedPieces = new ArrayList<>(); // CRIANDO A LISTA DE PEÇAS CAPTURADAS
@@ -37,6 +38,10 @@ public class ChessMatch {
 	
 	public boolean getCheck() {
 		return check;
+	}
+	
+	public boolean getCheckMate() {
+		return checkMate;
 	}
 	
 	public ChessPiece[][] getPieces() { // MÉTODO PARA RETORNAR UMA MATRIZ DE PEÇAS DE XADREZ CORRESPONDENTES A PARTIDA
@@ -75,7 +80,14 @@ public class ChessMatch {
 		
 		check = (testCheck(opponent(currentPlayer))) ? true : false; // ATUALIZANDO A PROPRIEDADE CHECK COMO VERDADEIRA, (SE NÃO FALSE)
 		
-		nextTurn(); // TROCANDO O TURNO
+		// TESTANDO SE A JOGADA QUE FEZ DEIXOU O OPONENTE EM CHECKMATE:
+		
+		if (testCheckMate(opponent(currentPlayer))) {
+			checkMate = true;
+		}
+		else {
+			nextTurn(); // TROCANDO O TURNO
+		}
 		return (ChessPiece)capturedPiece;
 	}
 	
@@ -183,6 +195,38 @@ public class ChessMatch {
 		// SIGNIFICA QUE O REI NÃO ESTÁ EM CHECK, RETORNANDO 'FALSE'	
 	}
 	
+	private boolean testCheckMate(Color color) {
+		if (!testCheck(color)) { // SE ESSA COR Ñ ESTIVER EM CHECK, SIGNIFICA QUE TAMBÉM NÃO ESTÁ EM CHECKMATE
+			return false;
+		}
+		// SE PASSAR DO IF, ENTÃO TESTAR TODAS AS PEÇAS DA COR Ñ TIVEREM MOVIMENTOS POSSÍVEIS QUE TIRE DO CHECK, ELA ESTÁ EM CHECKMATE
+		List<Piece> list = piecesOnTheBoard.stream().filter(x -> ((ChessPiece)x).getColor() == color).collect(Collectors.toList());
+		
+		for (Piece p : list) { // PERCORRER TODAS AS PEÇAS DA LISTA
+			boolean[][] mat = p.possibleMoves(); // MATRIZ RECEBE OS MOVIMENTOS POSSÍVEIS
+			for (int i=0; i<board.getRows();i++) { // PERCORRENDO AS LINHAS DA MATRIZ
+				for (int j=0; j<board.getColumns(); j++) { // PERCORRENDO AS COLUNAS DA MATRIZ
+					
+					// TESTAR SE ESSA POSIÇÃO DA MATRIZ É UM MOVIMENTO POSSÍVEL, SE TIVER UM MOVIMENTO POSSÍVEL VOU TESTAR, 
+					// ESSE MOVIMENTO POSSÍVEL TIRA DO CHECK? SE TIRA DO CHECK RETORNA FALSE, OU SEJA NÃO ESTÁ EM CHECKMATE
+					if (mat [i][j]) { 
+						Position source = ((ChessPiece)p).getChessPosition().toPosition(); // POSIÇÃO DE ORIGEM
+						Position target = new Position(i, j); // INSTANCIANDO A POSIÇÃO DE DESTINO 
+						// MOVENDO A PEÇA 'P' DA ORIGEM PARA O DESTINO:
+						Piece capturedPiece = makeMove(source, target); // CRIANDO VARIAVEL RECEBENDO O MOVIMENTO DE ORIGEM P/ DESTINO
+						boolean testCheck = testCheck(color); // TESTANDO SE O REI DA COR AINDA ESTÁ EM CHECK
+						undoMove(source, target, capturedPiece); // DESFAZER O MOVIMENTO DO TESTE ACIMA
+						if (!testCheck) {
+							return false; // SE NÃO ESTAVA EM CHECK SIGNIFICA QUE O MOVIMENTO A CIMA TIROU O REI DO CHECK
+						}
+					}
+				}
+			}
+		}
+		return true; // SE NÃO EXISTIR NENHUM MOVIMENTO POSSÍVEL QUE TIRE DO CHECK, RETORNA TRUE (ESTÁ EM CHECKMATE)
+		
+	}
+	
 	// MÉTODO PARA RECEBER AS COORDENADAS DO XADREZ (INSTANCIANDO UMA NOVA PEÇA NO JOGO DE XADREZ:
 	
 	private void placeNewPiece(char column, int row, ChessPiece piece) {
@@ -198,18 +242,25 @@ public class ChessMatch {
 		//placeNewPiece('e', 8, new King(board, Color.BLACK));
 		//placeNewPiece('e', 1, new King(board, Color.WHITE));
 		
-		placeNewPiece('c', 1, new Rook(board, Color.WHITE));
-        placeNewPiece('c', 2, new Rook(board, Color.WHITE));
-        placeNewPiece('d', 2, new Rook(board, Color.WHITE));
-        placeNewPiece('e', 2, new Rook(board, Color.WHITE));
-        placeNewPiece('e', 1, new Rook(board, Color.WHITE));
-        placeNewPiece('d', 1, new King(board, Color.WHITE));
+		//placeNewPiece('c', 1, new Rook(board, Color.WHITE));
+        //placeNewPiece('c', 2, new Rook(board, Color.WHITE));
+        //placeNewPiece('d', 2, new Rook(board, Color.WHITE));
+        //placeNewPiece('e', 2, new Rook(board, Color.WHITE));
+        //placeNewPiece('e', 1, new Rook(board, Color.WHITE));
+        //placeNewPiece('d', 1, new King(board, Color.WHITE));
 
-        placeNewPiece('c', 7, new Rook(board, Color.BLACK));
-        placeNewPiece('c', 8, new Rook(board, Color.BLACK));
-        placeNewPiece('d', 7, new Rook(board, Color.BLACK));
-        placeNewPiece('e', 7, new Rook(board, Color.BLACK));
-        placeNewPiece('e', 8, new Rook(board, Color.BLACK));
-        placeNewPiece('d', 8, new King(board, Color.BLACK));
+        //placeNewPiece('c', 7, new Rook(board, Color.BLACK));
+        //placeNewPiece('c', 8, new Rook(board, Color.BLACK));
+        //placeNewPiece('d', 7, new Rook(board, Color.BLACK));
+        //placeNewPiece('e', 7, new Rook(board, Color.BLACK));
+        //placeNewPiece('e', 8, new Rook(board, Color.BLACK));
+        //placeNewPiece('d', 8, new King(board, Color.BLACK));
+		
+		placeNewPiece('h', 7, new Rook(board, Color.WHITE));
+		placeNewPiece('d', 1, new Rook(board, Color.WHITE));
+		placeNewPiece('e', 1, new King(board, Color.WHITE));
+		
+		placeNewPiece('b', 8, new Rook(board, Color.BLACK));
+		placeNewPiece('a', 8, new King(board, Color.BLACK));
 	}
 }

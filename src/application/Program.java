@@ -18,7 +18,7 @@ public class Program {
 		ChessMatch chessMatch = new ChessMatch();
 		List<ChessPiece> captured = new ArrayList<>();
 		
-		while (true) { 
+		while (!chessMatch.getCheckMate()) { // ENQUANTO A MINHA PARTIDA Ñ TIVER COM O CHECKMATE, VAI RODAR O PROGRAMA
 			try {
 				UI.clearScreen();
 				UI.printMatch(chessMatch, captured); // MÉTODO PARA RECEBER A MATRIZ DE PEÇAS DA PARTIDA
@@ -51,5 +51,7 @@ public class Program {
 				sc.nextLine();
 			}
 		}
+		UI.clearScreen();
+		UI.printMatch(chessMatch, captured);
 	}
 }
