@@ -1,5 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import boardgame.Board;
 import boardgame.Piece;
 import boardgame.Position;
@@ -11,6 +14,9 @@ public class ChessMatch {
 	private int turn;
 	private Color currentPlayer;
 	private Board board;
+	
+	private List<Piece> piecesOnTheBoard = new ArrayList<>(); // CRIANDO A LISTA DE PEÇAS NO TABULEIRO
+	private List<Piece> capturedPieces = new ArrayList<>(); // CRIANDO A LISTA DE PEÇAS CAPTURADAS
 	
 	public ChessMatch() {
 		board = new Board(8, 8); // CLASSE CHESSMATCH QUE SABE A DIMENSÃO DO TABULEIRO DE XADREZ 
@@ -61,6 +67,15 @@ public class ChessMatch {
 		Piece p = board.removePiece(source); // VARIAVEL 'P' RECEBENDO A PEÇA QUE ESTAVA NA POSIÇÃO DE ORIGEM
 		Piece capturedPiece = board.removePiece(target); // REMOVENDO A POSSÍVEL PEÇA QUE ESTEJA NA POSIÇÃO DE DESTINO QUE SERÁ A PEÇA CAPTURADA 
 		board.placePiece(p, target); // COLOCANDO A POSIÇÃO DE ORIGEM NA POSIÇÃO DE DESTINO
+		
+		if (capturedPiece != null) {
+			piecesOnTheBoard.remove(capturedPiece);
+			capturedPieces.add(capturedPiece);
+			// SE ESSA PEÇA CAPTURADA FOR DIFERENTE DE NULLO (UMA PEÇA FOI CAPTURADA)
+			// REMOVENDO ESSA PEÇA DA LISTA DE PEÇAS NO TABULEIRO
+			// E ADICIONANDO A PEÇA NA LISTA DE PEÇAS CAPTURADAS
+		}
+		
 		return capturedPiece;
 	}
 	
@@ -94,10 +109,11 @@ public class ChessMatch {
 		// SE O JOGADOR ATUAL FOR IGUAL A BRANCO ENTÃO AGORA ELE VAI SER O PRETO, CASO CONTRARIO VAI SER O BRANCO
 	}
 	
-	// MÉTODO PARA RECEBER AS COORDENADAS DO XADREZ:
+	// MÉTODO PARA RECEBER AS COORDENADAS DO XADREZ (INSTANCIANDO UMA NOVA PEÇA NO JOGO DE XADREZ:
 	
 	private void placeNewPiece(char column, int row, ChessPiece piece) {
 		board.placePiece(piece, new ChessPosition(column, row).toPosition()); // O '.TOPOSITION' CONVERTE PARA POSIÇÃO DE MATRIZ
+		piecesOnTheBoard.add(piece); // COLOCANDO A PEÇA NA LISTA DE PEÇAS NO TABULEIRO
 	}
 	
 	// MÉTODO PARA INICIAR A PARTIDA DE XADREZ, COLOCANDO AS PEÇAS NO TABULEIRO:

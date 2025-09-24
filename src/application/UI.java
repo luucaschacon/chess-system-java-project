@@ -1,7 +1,10 @@
 package application;
 
+import java.util.Arrays;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import chess.ChessMatch;
 import chess.ChessPiece;
@@ -52,8 +55,10 @@ public class UI {
 		}
 	}
 	
-	public static void printMatch(ChessMatch chessMatch) { 
+	public static void printMatch(ChessMatch chessMatch, List<ChessPiece> captured) { 
 		printBoard(chessMatch.getPieces()); // IMPRIMIR O TABULEIRO
+		System.out.println();
+		printCapturedPieces(captured);
 		System.out.println();
 		System.out.println("Turn : " + chessMatch.getTurn()); // IMPRIMIR O TURNO
 		System.out.println("Waiting player: " + chessMatch.getCurrentPlayer()); // AGUARDANDO O JOGADOR DA VEZ A JOGAR
@@ -105,5 +110,21 @@ public class UI {
 			}
 		}
 		System.out.print(" "); // DE TODA FORMA NO FIM, IMPRIME UM ESPAÇO EM BRANCO PARA AS PEÇAS NÃO FICAREM GRUDADAS
+	}
+	
+	private static void printCapturedPieces(List<ChessPiece> captured) { // IMPRIMINDO AS PEÇAS CAPTURADAS
+		// CRIANDO LISTA DAS PEÇAS CAPTURADAS FILTRANDO PELA COR COM A EXPRESSÃO LAMBDA: 
+		List<ChessPiece> white = captured.stream().filter(x -> x.getColor() == Color.WHITE).collect(Collectors.toList());
+		List<ChessPiece> black = captured.stream().filter(x -> x.getColor() == Color.BLACK).collect(Collectors.toList());
+		// LÓGICA PARA IMPRIMIR ESSAS LISTAS NA TELA: 
+		System.out.println("Captured pieces: ");
+		System.out.print("White: ");
+		System.out.print(ANSI_WHITE); // PARA GARANTIR QUE A LISTA SEJA IMPRESSA NA COR BRANCA
+		System.out.println(Arrays.toString(white.toArray())); // IMPRIMINDO UM ARRAY DE VALORES NO JAVA
+		System.out.print(ANSI_RESET); // RESETANDO A COR DA IMPRESSÃO
+		System.out.print("Black: ");
+		System.out.print(ANSI_YELLOW); 
+		System.out.println(Arrays.toString(black.toArray())); 
+		System.out.print(ANSI_RESET); 
 	}
 }
