@@ -17,6 +17,10 @@ public abstract class ChessPiece extends Piece{
 		return color;
 	}	
 	
+	public ChessPosition getChessPosition() {
+		return ChessPosition.fromPosition(position); // CONVERTENDO O 'POSITION' PARA 'CHESSPOSITION'
+	}
+	
 	// O 'PROTECTED' É PARA QUE A OPERAÇÃO SEJA ACESSÍVEL SOMENTE PELO MESMO PACOTE E PELAS SUBCLASSES (QUE SÃO AS PEÇAS)
 	protected boolean isThereOpponentPiece(Position position) {
 		ChessPiece p = (ChessPiece)getBoard().piece(position); // VARIAVEL RECEBENDO A PEÇA QUE ESTIVER NA POSIÇÃO

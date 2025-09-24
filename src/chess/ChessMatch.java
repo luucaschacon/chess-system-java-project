@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import boardgame.Board;
 import boardgame.Piece;
@@ -14,6 +15,7 @@ public class ChessMatch {
 	private int turn;
 	private Color currentPlayer;
 	private Board board;
+	private boolean check; // OBS.: PROPRIEDADES BOOLEAN COMEÇAM COM 'FALSE'
 	
 	private List<Piece> piecesOnTheBoard = new ArrayList<>(); // CRIANDO A LISTA DE PEÇAS NO TABULEIRO
 	private List<Piece> capturedPieces = new ArrayList<>(); // CRIANDO A LISTA DE PEÇAS CAPTURADAS
@@ -31,6 +33,10 @@ public class ChessMatch {
 	
 	public Color getCurrentPlayer() {
 		return currentPlayer;
+	}
+	
+	public boolean getCheck() {
+		return check;
 	}
 	
 	public ChessPiece[][] getPieces() { // MÉTODO PARA RETORNAR UMA MATRIZ DE PEÇAS DE XADREZ CORRESPONDENTES A PARTIDA
@@ -57,6 +63,18 @@ public class ChessMatch {
 		validateSourcePosition(source); // VALIDANDO SE NA POSIÇÃO DE ORIGEM HAVIA UMA PEÇA
 		validateTargetPosition(source, target); // VALIDANDO A POSIÇÃO DE DESTINO
 		Piece capturedPiece = makeMove(source, target); // DECLARANDO VARIAVEL PARA RECEBER O RESULTADO DA OPERAÇÃO 'MAKEMOVE' QUE REALIZA O MOVIMENTO DA PEÇA
+		
+		// TESTANDO SE O MOVIMENTO DO JOGADOR ATUAL COLOCOU O PROPRIO JOGADOR EM CHECK:
+		
+		if (testCheck(currentPlayer)) {
+			undoMove(source, target, capturedPiece); // DESFAZENDO O MOVIMENTO
+			throw new ChessException("You can't put yourself in check"); // LANCANDO UMA EXCEÇÃO 
+		}
+		
+		// SE O IF FALHAR RESTA TESTAR SE O OPONENTE FICOU EM CHECK:
+		
+		check = (testCheck(opponent(currentPlayer))) ? true : false; // ATUALIZANDO A PROPRIEDADE CHECK COMO VERDADEIRA, (SE NÃO FALSE)
+		
 		nextTurn(); // TROCANDO O TURNO
 		return (ChessPiece)capturedPiece;
 	}
@@ -77,6 +95,23 @@ public class ChessMatch {
 		}
 		
 		return capturedPiece;
+	}
+	
+	// DESFAZER UM MOVIMENTO: 
+	
+	private void undoMove(Position source, Position target, Piece capturedPiece) { 
+		Piece p = board.removePiece(target); // TIRANDO A PEÇA QUE MOVEU DO DESTINO
+		board.placePiece(p, source); // DEVOLVENDO A PEÇA PARA A POSIÇÃO DE ORIGEM
+		
+		if (capturedPiece != null) {
+			board.placePiece(capturedPiece, target);
+			capturedPieces.remove(capturedPiece);
+			piecesOnTheBoard.add(capturedPiece);
+			// SE A PEÇA CAPTURADA FOR DIFERENTE DE NULO
+			// VOLTAR A PEÇA PRO TABULEIRO NA POSIÇÃO DE DESTINO
+			// TIRANDO A PEÇA DA LISTA DE PEÇAS CAPTURADAS
+			// E VOLTANDO A PEÇA NA LISTA DE PEÇA DO TABULEIRO
+		}
 	}
 	
 	// VALIDAÇÃO DA POSIÇÃO DE ORIGEM:
@@ -107,6 +142,45 @@ public class ChessMatch {
 		turn++;
 		currentPlayer = (currentPlayer == Color.WHITE) ? Color.BLACK : Color.WHITE;
 		// SE O JOGADOR ATUAL FOR IGUAL A BRANCO ENTÃO AGORA ELE VAI SER O PRETO, CASO CONTRARIO VAI SER O BRANCO
+	}
+	
+	private Color opponent(Color color) {
+		return (color == Color.WHITE) ? Color.BLACK : Color.WHITE;
+		// SE A COR PASSADA COMO ARGUMENTO FOR IGUAL A WHITE ENTÃO ELA RETORNA BLACK, CASO CONTRÁRIO RETORNA WHITE
+	}
+	
+	private ChessPiece king(Color color) { // PROCURANDO NA LISTA DE PEÇAS EM JOGO, QUAL QUE É O REI DESSA COR
+		List<Piece> list = piecesOnTheBoard.stream().filter(x -> ((ChessPiece)x).getColor() == color).collect(Collectors.toList());
+		// FILTRAGEM DA LISTA DAS PEÇAS EM JOGO, PROCURANDO AS PEÇAS 'X' TAL QUE A COR SEJA DA COR INFORMADA NO ARGUMENTO
+		
+		for (Piece p : list) { // PROCURAR A CADA PEÇA NA LISTA
+			if (p instanceof King) { // TESTANDO SE A PEÇA É UMA INSTANCIA DE REI SIGNIFICA QUE ENCONTROU O REI
+				return (ChessPiece)p; // RETORNANDO O REI (PEÇA 'P')
+			}
+		}
+		throw new IllegalStateException("There is no " + color + "king on the board");
+		// SE ESGOTAR O FOR E NÃO ENCONTRAR NENHUM REI, LANCA UMA EXCEÇÃO
+	}
+	
+	// TESTE SE O REI DA COR ESTÁ EM CHECK:
+	
+	private boolean testCheck(Color color) {
+		Position kingPosition = king(color).getChessPosition().toPosition(); // PEGA A POSIÇÃO DO REI NO FORMATO DE MATRIZ
+		List<Piece> opponentPieces = piecesOnTheBoard.stream().filter(x -> ((ChessPiece)x).getColor() == opponent(color)).collect(Collectors.toList());
+		// LISTA DAS PEÇAS DO OPONENTE NO TABULEIRO FILTRADAS COM A COR DO OPONENTE DESSE REI 
+		
+		// PARA CADA PEÇA CONTIDA NA LISTA, VAI TER QUE TESTAR SE EXISTE ALGUM MOVIMENTO POSSÍVEL QUE LEVA A POSIÇÃO DO MEU REI:
+		
+		for (Piece p : opponentPieces) {
+			boolean [][] mat = p.possibleMoves(); // PEGANDO OS MOVIMENTOS POSSÍVEIS DENTRO DE UMA MATRIZ
+			if (mat[kingPosition.getRow()][kingPosition.getColumn()]) { 
+				return true;
+				// SE NA MATRIZ A POSIÇÃO CORRESPONDENTE A POSIÇÃO DO REI FOR TRUE, SIGNIFICA QUE O REI ESTÁ EM CHECK
+			}
+		}
+		return false; 
+		// SE ESGOTAR TODAS AS PEÇAS ADVERSÁRIAS E NENHUMA DELAS ESTIVER NA MATRIZ DE MOVIMENTOS POSSÍVEIS A POSIÇÃO DO REI MARCADA COMO TRUE,
+		// SIGNIFICA QUE O REI NÃO ESTÁ EM CHECK, RETORNANDO 'FALSE'	
 	}
 	
 	// MÉTODO PARA RECEBER AS COORDENADAS DO XADREZ (INSTANCIANDO UMA NOVA PEÇA NO JOGO DE XADREZ:

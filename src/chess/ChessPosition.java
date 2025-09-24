@@ -47,7 +47,7 @@ public class ChessPosition {
 	// OPERAÇÃO PARA DADO UMA POSIÇÃO NA MATRIZ EU TENHO QUE CONVERETELA EM UMA POSIÇÃO DE XADREZ:
 	
 	protected static ChessPosition fromPosition(Position position) {
-		return new ChessPosition((char)('a' - position.getColumn()), 8 - position.getRow());
+		return new ChessPosition((char)('a' + position.getColumn()), 8 - position.getRow());
 	}
 	
 	@Override
