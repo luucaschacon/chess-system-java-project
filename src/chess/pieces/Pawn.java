@@ -2,13 +2,17 @@ package chess.pieces;
 
 import boardgame.Board;
 import boardgame.Position;
+import chess.ChessMatch;
 import chess.ChessPiece;
 import chess.Color;
 
 public class Pawn extends ChessPiece{ // PEÇA: PEÃO
 
-	public Pawn(Board board, Color color) {
+	private ChessMatch chessMatch;
+	
+	public Pawn(Board board, Color color, ChessMatch chessMatch) {
 		super(board, color);
+		this.chessMatch = chessMatch;
 	}
 
 	@Override
@@ -46,6 +50,23 @@ public class Pawn extends ChessPiece{ // PEÇA: PEÃO
 				mat[p.getRow()][p.getColumn()] = true;
 				// SE A POSIÇÃO DE UMA LINHA ACIMA DELE EXISTIR E TIVER VAZIA, ELE PODE MOVER PARA LÁ
 			}
+			
+			// # SPECIALMOVE EN PASSANT WHITE:
+			
+			if (position.getRow() == 3) { // TESTANDO SE A POSIÇÃO DA PEÇA É IGUAL A '3'
+				Position left = new Position(position.getRow(), position.getColumn() - 1); // CRIANDO VARIAVEL DA POSIÇÃO PARA VERIFICAR SE TEM UM PEÃO DO LADO ESQUERDO E SE É UM OPONENTE VULNERAVEL A TOMAR UM EN PASSANT:
+				if (getBoard().positionExists(left) && isThereOpponentPiece(left) && getBoard().piece(left) == chessMatch.getEnPassantVulnerable()) {
+					mat[left.getRow() - 1][left.getColumn()] = true;
+					// MOVENDO PARA A POSIÇÃO DA MATRIZ (DIAGONAL ESQUERDA DO PEÃO)
+				}
+				
+				Position right = new Position(position.getRow(), position.getColumn() + 1); // CRIANDO VARIAVEL DA POSIÇÃO PARA VERIFICAR SE TEM UM PEÃO DO LADO DIREITO E SE É UM OPONENTE VULNERAVEL A TOMAR UM EN PASSANT:
+				if (getBoard().positionExists(right) && isThereOpponentPiece(right) && getBoard().piece(right) == chessMatch.getEnPassantVulnerable()) {
+					mat[right.getRow() - 1][right.getColumn()] = true;
+					// MOVENDO PARA A POSIÇÃO DA MATRIZ (DIAGONAL DIREITA DO PEÃO)
+				}
+			}
+			
 		}
 		else { // SE Ñ É PEÇA BRANCA, AGORA É UMA PEÇA PRETA:
 			p.setValues(position.getRow() + 1, position.getColumn());
@@ -64,6 +85,22 @@ public class Pawn extends ChessPiece{ // PEÇA: PEÃO
 			p.setValues(position.getRow() +1, position.getColumn() +1);
 			if (getBoard().positionExists(p) && isThereOpponentPiece(p)) { 
 				mat[p.getRow()][p.getColumn()] = true;
+			}
+			
+			// # SPECIALMOVE EN PASSANT BLACK:
+
+			if (position.getRow() == 4) { // TESTANDO SE A POSIÇÃO DA PEÇA É IGUAL A '4'
+				Position left = new Position(position.getRow(), position.getColumn() - 1); // CRIANDO VARIAVEL DA POSIÇÃO PARA VERIFICAR SE TEM UM PEÃO DO LADO ESQUERDO E SE É UM OPONENTE VULNERAVEL A TOMAR UM EN PASSANT:
+				if (getBoard().positionExists(left) && isThereOpponentPiece(left) && getBoard().piece(left) == chessMatch.getEnPassantVulnerable()) {
+					mat[left.getRow() + 1][left.getColumn()] = true;
+					// MOVENDO PARA A POSIÇÃO DA MATRIZ (DIAGONAL ESQUERDA DO PEÃO)
+				}
+
+				Position right = new Position(position.getRow(), position.getColumn() + 1); // CRIANDO VARIAVEL DA POSIÇÃO PARA VERIFICAR SE TEM UM PEÃO DO LADO DIREITO E SE É UM OPONENTE VULNERAVEL A TOMAR UM EN PASSANT:
+				if (getBoard().positionExists(right) && isThereOpponentPiece(right) && getBoard().piece(right) == chessMatch.getEnPassantVulnerable()) {
+					mat[right.getRow() + 1][right.getColumn()] = true;
+					// MOVENDO PARA A POSIÇÃO DA MATRIZ (DIAGONAL DIREITA DO PEÃO)
+				}
 			}
 		}	
 		return mat;
