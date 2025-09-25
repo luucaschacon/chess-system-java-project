@@ -1,5 +1,6 @@
 package chess;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ public class ChessMatch {
 	private boolean check; // OBS.: PROPRIEDADES BOOLEAN COMEÇAM COM 'FALSE'
 	private boolean checkMate;
 	private ChessPiece enPassantVulnerable;
+	private ChessPiece promoted;
 	
 	private List<Piece> piecesOnTheBoard = new ArrayList<>(); // CRIANDO A LISTA DE PEÇAS NO TABULEIRO
 	private List<Piece> capturedPieces = new ArrayList<>(); // CRIANDO A LISTA DE PEÇAS CAPTURADAS
@@ -51,6 +53,10 @@ public class ChessMatch {
 	
 	public ChessPiece getEnPassantVulnerable() {
 		return enPassantVulnerable;
+	}
+	
+	public ChessPiece getPromoted() {
+		return promoted;
 	}
 	
 	public ChessPiece[][] getPieces() { // MÉTODO PARA RETORNAR UMA MATRIZ DE PEÇAS DE XADREZ CORRESPONDENTES A PARTIDA
@@ -88,6 +94,17 @@ public class ChessMatch {
 		//DECLARANDO VARIAVEL DA PEÇA MOVIDA, A PEÇA QUE SE MOVEU FOI A PEÇA QUE FOI COLOCADA NO DESTINO, E PEGA UMA REFERENCIA PARA ELA:
 		ChessPiece movedPiece = (ChessPiece)board.piece(target);
 		
+		// #SPECIAL MOVE PROMOTION
+		promoted = null;
+		if (movedPiece instanceof Pawn) { // TESTANDO SE A PEÇA MOVIDA FOI UM PEÃO
+			// TESTEANDO SE A PEÇA QUE FOI MOVIDA FOR BRANCA, E A POSIÇÃO DE DESTINO É '0' (SIGNIFICA QUE A BRANCA CHEGOU NO FINAL)
+			// OU SE A PEÇ É PRETA E A POSIÇÃO DE DESTINO É IGUAL A '7' (SIGNIFICA QUE A PRETA CHEGOU NO FINAL)
+			if ((movedPiece.getColor() == Color.WHITE && target.getRow() == 0 || movedPiece.getColor() == Color.BLACK && target.getRow() == 7)) {
+				promoted = (ChessPiece)board.piece(target); // PEÇA PROMOVIDA FOI O PEÃO QUE CHEGOU NO FINAL (JOGANDO ELA NA VARIAVEL 'PROMOTED')
+				promoted = replacePromotedPiece("Q"); // TROCANDO O PEÃO POR UMA PEÇA MAIS PODEROSA (POR PADRÃO COLOCANDO A RAINHA OU O USUARIO ESCOLHE OUTRA)
+			}
+		}
+		
 		// SE O IF FALHAR RESTA TESTAR SE O OPONENTE FICOU EM CHECK:
 		
 		check = (testCheck(opponent(currentPlayer))) ? true : false; // ATUALIZANDO A PROPRIEDADE CHECK COMO VERDADEIRA, (SE NÃO FALSE)
@@ -113,6 +130,35 @@ public class ChessMatch {
 		}
 		
 		return (ChessPiece)capturedPiece;
+	}
+	
+	public ChessPiece replacePromotedPiece(String type) {
+		if (promoted == null) { // SE A PEÇA PRMOVIDA FOR IGUAL A NULO, SIGNIFICA QUE Ñ TEM COMO TROCAR A PEÇA PROMOVIDA
+			throw new IllegalStateException("There is no piece to be promoted");
+		}
+		// VERIFICANDO SE A LETRA RECEBIDA É UMA LETRA VALIDA (SE NÃO FOR IGUAL AS LETRAS ('B', 'N', 'R' OU 'Q')):
+		if (!type.equals("B") && !type.equals("N") && !type.equals("R") & !type.equals("Q")) {
+			throw new InvalidParameterException("Invalid type for promotion");
+		}
+		
+		Position pos = promoted.getChessPosition().toPosition(); // PEGANDO A POSIÇÃO DA PEÇA PROMOVIDA
+		Piece p = board.removePiece(pos); // CRIANDO A VARIAVEL PARA RECEBER A PEÇA REMOVIDA DA POSIÇÃO
+		piecesOnTheBoard.remove(p); // EXCLUINDO A PEÇA 'P' DA LISTA DE PEÇAS DO TABULEIRO
+		
+		ChessPiece newPiece = newPiece(type, promoted.getColor()); // DECLARANDO VARIAVEL RECEBENDO A NOVA PEÇA PROMOVIDA COM A COR
+		board.placePiece(newPiece, pos); // COLOCANDO A NOVA PEÇA NA POSIÇÃO DA PEÇA PROMOVIDA
+		piecesOnTheBoard.add(newPiece); // ADICIONANDO A NOVA PEÇA CRIADA NO TABULEIRO
+		
+		return newPiece; // RETORNANDO A NOVA PEÇA INSTANCIADA
+		
+	}
+	
+	// MÉTODO AUXILIAR PARA INSTANCIAR A PEÇA ESPECÍFICA (RETORNAR A PEÇA DE ACORDO COM A LETRA E A COR INFORMADA):	
+	private ChessPiece newPiece(String type, Color color) {
+		if (type.equals("B")) return new Bishop(board, color);
+		if (type.equals("N")) return new Knight(board, color);
+		if (type.equals("Q")) return new Queen(board, color);
+		return new Rook(board, color);
 	}
 	
 	// OPERAÇÃO PARA REALIZAR O MOVIMENTO DA PEÇA:
