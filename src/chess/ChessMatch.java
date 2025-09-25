@@ -111,6 +111,34 @@ public class ChessMatch {
 			// E ADICIONANDO A PEÇA NA LISTA DE PEÇAS CAPTURADAS
 		}
 		
+		// #SPECIALMOVE CASTLING KINGSIDE ROOK (ROQUE PEQUENO):
+
+		if(p instanceof King && target.getColumn() == source.getColumn() + 2) {
+			// SE A PEÇA 'P' QUE FOI MOVIDA FOR UMA INSTANCIA DE REI E TAMBÉM A POSIÇÃO DE DESTINO FOR IGUAL A POSIÇÃO DE ORIGEM +2
+			// (SIGNIFICA QUE O REI ANDOU DUAS CASAS PARA A DIREITA (FOI UM ROQUE PEQUENO) 
+			// ENTÃO TEMOS QUE PEGAR A TORRE QUE ESTÁ A 3 COLUNAS A DIREITA DO REI E COLOCAR ELA AS DUAS CASAS PARA A ESQUERDA
+
+			Position sourceT = new Position(source.getRow(), source.getColumn() + 3); // CRIANDO A POSIÇÃO DE ORIGEM DA TORRE A 3 COLUNAS A DIREITA DO REI
+			Position targetT = new Position(source.getRow(), source.getColumn() + 1); // POSIÇÃO DE DESTINO DA TORRE A 1 COLUNA PARA A DIREITA DO REI
+			ChessPiece rook = (ChessPiece)board.removePiece(sourceT); // RETIRANDO A TORRE DE ONDE ELA ESTÁ
+			board.placePiece(rook, targetT); // COLOCANDO A TORRE NA POSIÇÃO DE DESTINO 
+			rook.increaseMoveCount(); // INCREMENTAR A QUANTIDADE DE MOVIMENTOS DA TORRE
+		}
+
+		// #SPECIALMOVE CASTLING QUEENSIDE ROOK (ROQUE GRANDE):
+
+		if(p instanceof King && target.getColumn() == source.getColumn() - 2) {
+			// SE A PEÇA 'P' QUE FOI MOVIDA FOR UMA INSTANCIA DE REI E TAMBÉM A POSIÇÃO DE DESTINO FOR IGUAL A POSIÇÃO DE ORIGEM +2
+			// (SIGNIFICA QUE O REI ANDOU DUAS CASAS PARA A ESQUERDA (FOI UM ROQUE GRANDE) 
+			// ENTÃO TEMOS QUE PEGAR A TORRE QUE ESTÁ A 4 COLUNAS A ESQUERDA DO REI E COLOCAR ELA AS TRÊS CASAS PARA A DIREITA
+
+			Position sourceT = new Position(source.getRow(), source.getColumn() - 4); // CRIANDO A POSIÇÃO DE ORIGEM DA TORRE A 4 COLUNAS A ESQUERDA DO REI
+			Position targetT = new Position(source.getRow(), source.getColumn() - 1); // POSIÇÃO DE DESTINO DA TORRE A 1 COLUNA PARA A ESQUERDA DO REI
+			ChessPiece rook = (ChessPiece)board.removePiece(sourceT); // RETIRANDO A TORRE DE ONDE ELA ESTÁ
+			board.placePiece(rook, targetT); // COLOCANDO A TORRE NA POSIÇÃO DE DESTINO 
+			rook.increaseMoveCount(); // INCREMENTAR A QUANTIDADE DE MOVIMENTOS DA TORRE
+		}
+		
 		return capturedPiece;
 	}
 	
@@ -130,8 +158,28 @@ public class ChessMatch {
 			// TIRANDO A PEÇA DA LISTA DE PEÇAS CAPTURADAS
 			// E VOLTANDO A PEÇA NA LISTA DE PEÇA DO TABULEIRO
 		}
+		
+		// DESFAZENDO O MOVIMENTO #SPECIALMOVE CASTLING KINGSIDE ROOK (ROQUE PEQUENO):
+
+		if(p instanceof King && target.getColumn() == source.getColumn() + 2) {			
+			Position sourceT = new Position(source.getRow(), source.getColumn() + 3); 
+			Position targetT = new Position(source.getRow(), source.getColumn() + 1); 
+			ChessPiece rook = (ChessPiece)board.removePiece(targetT); // REMOVER A TORRE DA POSIÇÃO DE DESTINO
+			board.placePiece(rook, sourceT); // DEVOLVER A TORRE PARA A POSIÇÃO DE ORIGEM
+			rook.decreaseMoveCount(); // DECREMENTAR A QUANTIDADE DE MOVIMENTOS DELA
+		}
+
+		// DESFAZENDO O MOVIMENTO #SPECIALMOVE CASTLING QUEENSIDE ROOK (ROQUE GRANDE):
+
+		if(p instanceof King && target.getColumn() == source.getColumn() - 2) {
+			Position sourceT = new Position(source.getRow(), source.getColumn() - 4); 
+			Position targetT = new Position(source.getRow(), source.getColumn() - 1); 
+			ChessPiece rook = (ChessPiece)board.removePiece(targetT);
+			board.placePiece(rook, sourceT);
+			rook.decreaseMoveCount(); 
+		}
 	}
-	
+
 	// VALIDAÇÃO DA POSIÇÃO DE ORIGEM:
 	
 	private void validateSourcePosition(Position position) {
@@ -273,7 +321,7 @@ public class ChessMatch {
 		placeNewPiece('b', 1, new Knight(board, Color.WHITE));
 		placeNewPiece('c', 1, new Bishop(board, Color.WHITE));
 		placeNewPiece('d', 1, new Queen(board, Color.WHITE));
-        placeNewPiece('e', 1, new King(board, Color.WHITE));
+        placeNewPiece('e', 1, new King(board, Color.WHITE, this)); // PASSAR A PARTIDA COM O 'THIS'
 		placeNewPiece('f', 1, new Bishop(board, Color.WHITE));
         placeNewPiece('h', 1, new Rook(board, Color.WHITE));
 		placeNewPiece('g', 1, new Knight(board, Color.WHITE));
@@ -290,7 +338,7 @@ public class ChessMatch {
 		placeNewPiece('b', 8, new Knight(board, Color.BLACK));
 		placeNewPiece('c', 8, new Bishop(board, Color.BLACK));
 		placeNewPiece('d', 8, new Queen(board, Color.BLACK));
-        placeNewPiece('e', 8, new King(board, Color.BLACK));
+        placeNewPiece('e', 8, new King(board, Color.BLACK, this));
 		placeNewPiece('f', 8, new Bishop(board, Color.BLACK));
         placeNewPiece('h', 8, new Rook(board, Color.BLACK));
 		placeNewPiece('g', 8, new Knight(board, Color.BLACK));
